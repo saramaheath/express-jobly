@@ -62,7 +62,7 @@ class Company {
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
-           WHERE name = ${filter}
+           WHERE ${filter} 
            ORDER BY name`);
     return companiesRes.rows;
   }

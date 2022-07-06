@@ -8,6 +8,7 @@ const express = require("express");
 const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
+const { sqlForFilterAll } = require("../helpers/sql");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -53,9 +54,10 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   debugger;
-  const filter = req.query;
-  console.log("filter = ", filter);
-  const companies = await Company.findAll(filter);
+  const filerData = req.query;
+  //filter = {name: 'Bauer-Son', ...}
+  const whereConditions = sqlForFilterAll(filerData);
+  const companies = await Company.findAll(whereConditions);
   return res.json({ companies });
 });
 

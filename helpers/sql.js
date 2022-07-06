@@ -5,7 +5,7 @@ const { BadRequestError } = require("../expressError");
  * takes object like:
  * {numEmployees: "num_employees", logoUrl: "logo_url",}
  * returns object like: { setCols: "first_name=$1, age=$2", values: ["dan", "23"] }
-  */
+ */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
@@ -16,11 +16,33 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     (colName, idx) => `"${jsToSql[colName] || colName}"=$${idx + 1}`
   );
 
-
   return {
     setCols: cols.join(", "),
     values: Object.values(dataToUpdate),
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+/**reformats javascript, inorder to be inserted into SQL query where clause
+ * takes object like: {name: "Bauer-Son", ..,}
+ * returns string of subconditions for where clause
+ */
+function sqlForFilterAll(queryData) {
+  const keys = Object.keys(queryData);
+  if (keys.length === 0) throw new BadRequestError("No data");
+  //WHERE 'name ILIKE $1, min_employee >= $2 AND max_employee <= $2'
+  //['%name%', '%num_employees%']
+  let whereConditions = [];
+  if (keys.includes("name")) {
+    whereConditions.push(`name=${queryData["name"]}`);
+  }
+  if (keys.includes("minEmployees")) {
+    whereConditions.push(`${queryData["minEmployees"]} <= "num_employees"`);
+  }
+  if (keys.includes("maxEmployees")) {
+    whereConditions.push(`${queryData["maxEmployees"]} >= "num_employees"`);
+  }
+  whereConditions = whereConditions.join(" AND ");
+  console.log(whereConditions, 'where conditions');
+}
+
+module.exports = { sqlForPartialUpdate, sqlForFilterAll };
