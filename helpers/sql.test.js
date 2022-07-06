@@ -1,5 +1,5 @@
+const { BadRequestError } = require("../expressError");
 const { sqlForPartialUpdate } = require("./sql");
-
 describe("sqlForPartialUpdate", function () {
   test("given valid data", function () {
     const result = sqlForPartialUpdate({
@@ -15,4 +15,25 @@ describe("sqlForPartialUpdate", function () {
       values: [5, "test.com"],
     });
   });
+
+  test("given invalid data", function() {
+    try{
+      const result = sqlForPartialUpdate({},
+        {
+       numEmployees: "num_employees",
+       logoUrl: "logo_url",
+     });
+     throw new Error("Should not run this line of code");
+
+    }catch(err){
+
+      expect(err instanceof BadRequestError).toBeTruthy();
+
+    }
+
+
+  });
+
+
+
 });

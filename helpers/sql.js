@@ -1,10 +1,10 @@
 const { BadRequestError } = require("../expressError");
 
 /**reformats javascript, inorder to be inserted into SQL query
- * takes object like: { name, description, numEmployees, logoUrl }, 
- * takes object like: 
- * {numEmployees: "num_employees", logoUrl: "logo_url",} 
- * returns object like: { setCols: "first_name=$1, age=$2", values: ["dan", "23"] }       
+ * takes object like: { name, description, numEmployees, logoUrl },
+ * takes object like:
+ * {numEmployees: "num_employees", logoUrl: "logo_url",}
+ * returns object like: { setCols: "first_name=$1, age=$2", values: ["dan", "23"] }
   */
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
@@ -15,7 +15,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const cols = keys.map(
     (colName, idx) => `"${jsToSql[colName] || colName}"=$${idx + 1}`
   );
-  console.log(cols, 'columns');
+
 
   return {
     setCols: cols.join(", "),
