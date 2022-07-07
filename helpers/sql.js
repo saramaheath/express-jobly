@@ -28,21 +28,34 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  */
 function sqlForFilterAll(queryData) {
   const keys = Object.keys(queryData);
-  if (keys.length === 0) throw new BadRequestError("No data");
+
+
   //WHERE 'name ILIKE $1, min_employee >= $2 AND max_employee <= $2'
   //['%name%', '%num_employees%']
+
   let whereConditions = [];
   if (keys.includes("name")) {
-    whereConditions.push(`name=${queryData["name"]}`);
+    whereConditions.push(`ILIKE'%${queryData["name"]}%'`);
   }
   if (keys.includes("minEmployees")) {
-    whereConditions.push(`${queryData["minEmployees"]} <= "num_employees"`);
+    whereConditions.push(`>=${queryData["minEmployees"]}`);
   }
   if (keys.includes("maxEmployees")) {
-    whereConditions.push(`${queryData["maxEmployees"]} >= "num_employees"`);
+    whereConditions.push(`<=${queryData["maxEmployees"]}`);
   }
+
+  cols = keys.map(
+    (colName,idx)=>`"${colName}"=$${idx + 1}`);
+  console.log(cols)
   whereConditions = whereConditions.join(" AND ");
-  console.log(whereConditions, 'where conditions');
+
+
+  return {
+    setCols: cols.join(", "),
+    values:whereConditions
+  }
+
+
 }
 
 module.exports = { sqlForPartialUpdate, sqlForFilterAll };

@@ -56,8 +56,7 @@ router.get("/", async function (req, res, next) {
   debugger;
   const filerData = req.query;
   //filter = {name: 'Bauer-Son', ...}
-  const whereConditions = sqlForFilterAll(filerData);
-  const companies = await Company.findAll(whereConditions);
+  const companies = await Company.findAll(filerData);
   return res.json({ companies });
 });
 
