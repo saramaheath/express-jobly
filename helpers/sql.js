@@ -1,5 +1,5 @@
 const { BadRequestError } = require("../expressError");
-
+//TODO:what does this func do, explicitly
 /**reformats javascript, inorder to be inserted into SQL query
  * takes object like: { name, description, numEmployees, logoUrl },
  * takes object like:
@@ -29,21 +29,30 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * returns object with string of subconditions for WHERE clause and
  * parameterized query inputs (sqlInjection).
  */
+//TODO: operator varialbe name- colname to operator, moved into model method '_'
+//already converted to min and max convertions, up in route instead, that is where
+//query is, separate concerns there
 function sqlForFilterAll(queryData, jsToSql, operator) {
   const keys = Object.keys(queryData);
   if (keys.includes("name")) {
     queryData["name"] = `%${queryData["name"]}%`;
   }
+  if (keys.includes("minEmployees") && keys.includes("maxEmployees")) {
+    if (Number(queryData.minEmployees) > Number(queryData.maxEmployees)) {
+      throw new BadRequestError(
+        "min employess cannot be greater than max employees"
+      );
+    }
+  }
   cols = keys.map(
-    (colName, idx) => `"${jsToSql[colName] || colName}" ${operator[colName]} $${idx + 1}`);
-
+    (colName, idx) =>
+      `"${jsToSql[colName] || colName}" ${operator[colName]} $${idx + 1}`
+  );
 
   return {
     setCols: cols.join(" AND "),
-    values: Object.values(queryData)
+    values: Object.values(queryData),
   };
-
-
 }
 
 module.exports = { sqlForPartialUpdate, sqlForFilterAll };

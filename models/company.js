@@ -21,7 +21,8 @@ class Company {
       `SELECT handle
            FROM companies
            WHERE handle = $1`,
-      [handle]);
+      [handle]
+    );
 
     if (duplicateCheck.rows[0])
       throw new BadRequestError(`Duplicate company: ${handle}`);
@@ -36,47 +37,59 @@ class Company {
            VALUES
              ($1, $2, $3, $4, $5)
            RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`,
-      [
-        handle,
-        name,
-        description,
-        numEmployees,
-        logoUrl,
-      ],
+      [handle, name, description, numEmployees, logoUrl]
     );
     const company = result.rows[0];
 
     return company;
   }
 
-  /** Find all companies.
-   *
+  /** Find all companies or find all companies with filtered conditions.
+   * TODO: update the takes bellow to match filter 
+   * takes filter object like: { setCols: ..., values:... }
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
-
+  //TODO:   setcols, rename and column name
   static async findAll(filter) {
-    const { setCols, values } = sqlForFilterAll(filter, {
-      maxEmployees: "num_employees",
-      minEmployees: "num_employees"
-    },
-      {
-        name: "ILIKE",
-        maxEmployees: "<=",
-        minEmployees: ">="
-      });
-    console.log(setCols, values);
-    const companiesRes = await db.query(
-      `SELECT handle,
-                name,
-                description,
-                num_employees AS "numEmployees",
-                logo_url AS "logoUrl"
-           FROM companies
-           WHERE ${setCols}
-
-           ORDER BY name`,
-      values);
-    return companiesRes.rows;
+    console.log(filter, "filter");
+    if (Object.keys(filter).length === 0) {
+      const companiesRes = await db.query(
+        `SELECT handle,
+                  name,
+                  description,
+                  num_employees AS "numEmployees",
+                  logo_url AS "logoUrl"
+             FROM companies
+             ORDER BY name`
+      );
+      return companiesRes.rows;
+    } else {
+      const { setCols, values } = sqlForFilterAll(
+        filter,
+        {
+          maxEmployees: "num_employees",
+          minEmployees: "num_employees",
+        },
+        {
+          name: "ILIKE",
+          maxEmployees: "<=",
+          minEmployees: ">=",
+        }
+      );
+      console.log(setCols, values);
+      const companiesRes = await db.query(
+        `SELECT handle,
+                  name,
+                  description,
+                  num_employees AS "numEmployees",
+                  logo_url AS "logoUrl"
+             FROM companies
+             WHERE ${setCols}
+             ORDER BY name`,
+        values
+      );
+      return companiesRes.rows;
+    }
   }
 
   /** Given a company handle, return data about company.
@@ -96,7 +109,8 @@ class Company {
                 logo_url AS "logoUrl"
            FROM companies
            WHERE handle = $1`,
-      [handle]);
+      [handle]
+    );
 
     const company = companyRes.rows[0];
 
@@ -118,12 +132,10 @@ class Company {
    */
 
   static async update(handle, data) {
-    const { setCols, values } = sqlForPartialUpdate(
-      data,
-      {
-        numEmployees: "num_employees",
-        logoUrl: "logo_url",
-      });
+    const { setCols, values } = sqlForPartialUpdate(data, {
+      numEmployees: "num_employees",
+      logoUrl: "logo_url",
+    });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `
@@ -150,12 +162,12 @@ class Company {
            FROM companies
            WHERE handle = $1
            RETURNING handle`,
-      [handle]);
+      [handle]
+    );
     const company = result.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 }
-
 
 module.exports = Company;

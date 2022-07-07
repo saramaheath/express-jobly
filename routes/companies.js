@@ -15,7 +15,6 @@ const companyUpdateSchema = require("../schemas/companyUpdate.json");
 
 const router = new express.Router();
 
-
 /** POST / { company } =>  { company }
  *
  * company should be { handle, name, description, numEmployees, logoUrl }
@@ -26,13 +25,11 @@ const router = new express.Router();
  */
 
 router.post("/", ensureLoggedIn, async function (req, res, next) {
-  const validator = jsonschema.validate(
-    req.body,
-    companyNewSchema,
-    {required: true}
-  );
+  const validator = jsonschema.validate(req.body, companyNewSchema, {
+    required: true,
+  });
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
@@ -42,18 +39,30 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 /** GET /  =>
  *   { companies: [ { handle, name, description, numEmployees, logoUrl }, ...] }
- *
+ * Checks for valid inputs
  * Can filter on provided search filters:
  * - minEmployees
  * - maxEmployees
  * - nameLike (will find case-insensitive, partial matches)
  *
  * Authorization required: none
+ * return json object of companies
  */
-
-
+//json schema validator better approach for validation
+//could have split model methods for filtered vs get all companies, maybe?
+//now model method name doesn't match either filter or all
 router.get("/", async function (req, res, next) {
   const filterData = req.query;
+
+  const isValidInput = (currentValue) =>
+    currentValue === "name" ||
+    currentValue === "minEmployees" ||
+    currentValue === "maxEmployees";
+  const isValid = Object.keys(filterData).every(isValidInput);
+
+  if (!isValid) {
+    throw new BadRequestError("Not valid filter input");
+  }
   const companies = await Company.findAll(filterData);
   return res.json({ companies });
 });
@@ -83,13 +92,11 @@ router.get("/:handle", async function (req, res, next) {
  */
 
 router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
-  const validator = jsonschema.validate(
-    req.body,
-    companyUpdateSchema,
-    {required:true}
-  );
+  const validator = jsonschema.validate(req.body, companyUpdateSchema, {
+    required: true,
+  });
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
@@ -106,6 +113,5 @@ router.delete("/:handle", ensureLoggedIn, async function (req, res, next) {
   await Company.remove(req.params.handle);
   return res.json({ deleted: req.params.handle });
 });
-
 
 module.exports = router;
