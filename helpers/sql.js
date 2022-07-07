@@ -23,37 +23,25 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
 }
 
 /**reformats javascript, inorder to be inserted into SQL query where clause
- * takes object like: {name: "Bauer-Son", ..,}
- * returns string of subconditions for where clause
+ * takes queryData like: {name: "Bauer-Son", ..,}
+ * takes jsToSql like:{maxEmployees: "num_employees"}changes colName to match DB
+ * takes operator like:{name: "ILIKE"}inserts correct operator into setCols
+ * returns object with string of subconditions for WHERE clause and
+ * parameterized query inputs (sqlInjection).
  */
-function sqlForFilterAll(queryData) {
+function sqlForFilterAll(queryData, jsToSql, operator) {
   const keys = Object.keys(queryData);
-
-
-  //WHERE 'name ILIKE $1, min_employee >= $2 AND max_employee <= $2'
-  //['%name%', '%num_employees%']
-
-  let whereConditions = [];
   if (keys.includes("name")) {
-    whereConditions.push(`ILIKE'%${queryData["name"]}%'`);
+    queryData["name"] = `%${queryData["name"]}%`;
   }
-  if (keys.includes("minEmployees")) {
-    whereConditions.push(`>=${queryData["minEmployees"]}`);
-  }
-  if (keys.includes("maxEmployees")) {
-    whereConditions.push(`<=${queryData["maxEmployees"]}`);
-  }
-
   cols = keys.map(
-    (colName,idx)=>`"${colName}"=$${idx + 1}`);
-  console.log(cols)
-  whereConditions = whereConditions.join(" AND ");
+    (colName, idx) => `"${jsToSql[colName] || colName}" ${operator[colName]} $${idx + 1}`);
 
 
   return {
-    setCols: cols.join(", "),
-    values:whereConditions
-  }
+    setCols: cols.join(" AND "),
+    values: Object.values(queryData)
+  };
 
 
 }

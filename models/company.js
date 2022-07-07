@@ -18,16 +18,16 @@ class Company {
 
   static async create({ handle, name, description, numEmployees, logoUrl }) {
     const duplicateCheck = await db.query(
-        `SELECT handle
+      `SELECT handle
            FROM companies
            WHERE handle = $1`,
-        [handle]);
+      [handle]);
 
     if (duplicateCheck.rows[0])
       throw new BadRequestError(`Duplicate company: ${handle}`);
 
     const result = await db.query(
-        `INSERT INTO companies(
+      `INSERT INTO companies(
           handle,
           name,
           description,
@@ -36,13 +36,13 @@ class Company {
            VALUES
              ($1, $2, $3, $4, $5)
            RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`,
-        [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      [
+        handle,
+        name,
+        description,
+        numEmployees,
+        logoUrl,
+      ],
     );
     const company = result.rows[0];
 
@@ -55,18 +55,27 @@ class Company {
    * */
 
   static async findAll(filter) {
-   const {setCols, values} = sqlForFilterAll(filter)
+    const { setCols, values } = sqlForFilterAll(filter, {
+      maxEmployees: "num_employees",
+      minEmployees: "num_employees"
+    },
+      {
+        name: "ILIKE",
+        maxEmployees: "<=",
+        minEmployees: ">="
+      });
+    console.log(setCols, values);
     const companiesRes = await db.query(
-        `SELECT handle,
+      `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
-           WHERE ${setCols},
+           WHERE ${setCols}
 
            ORDER BY name`,
-           values);
+      values);
     return companiesRes.rows;
   }
 
@@ -80,14 +89,14 @@ class Company {
 
   static async get(handle) {
     const companyRes = await db.query(
-        `SELECT handle,
+      `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
            WHERE handle = $1`,
-        [handle]);
+      [handle]);
 
     const company = companyRes.rows[0];
 
@@ -110,11 +119,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `
@@ -137,11 +146,11 @@ class Company {
 
   static async remove(handle) {
     const result = await db.query(
-        `DELETE
+      `DELETE
            FROM companies
            WHERE handle = $1
            RETURNING handle`,
-        [handle]);
+      [handle]);
     const company = result.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);

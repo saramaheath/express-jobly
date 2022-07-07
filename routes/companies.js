@@ -53,10 +53,8 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 
 router.get("/", async function (req, res, next) {
-  debugger;
-  const filerData = req.query;
-  //filter = {name: 'Bauer-Son', ...}
-  const companies = await Company.findAll(filerData);
+  const filterData = req.query;
+  const companies = await Company.findAll(filterData);
   return res.json({ companies });
 });
 
