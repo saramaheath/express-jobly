@@ -59,8 +59,9 @@ router.get("/", async function (req, res, next) {
     currentValue === "minEmployees" ||
     currentValue === "maxEmployees";
   const isValid = Object.keys(filterData).every(isValidInput);
-
-  if (!isValid) {
+  console.log("isValid", isValid)
+  if (isValid===false) {
+    console.log("throws error")
     throw new BadRequestError("Not valid filter input");
   }
   const companies = await Company.findAll(filterData);

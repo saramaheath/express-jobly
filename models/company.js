@@ -45,13 +45,18 @@ class Company {
   }
 
   /** Find all companies or find all companies with filtered conditions.
-   * TODO: update the takes bellow to match filter 
+   * TODO: update the takes bellow to match filter
    * takes filter object like: { setCols: ..., values:... }
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
   //TODO:   setcols, rename and column name
   static async findAll(filter) {
-    console.log(filter, "filter");
+
+    const {name, minEmployees, maxEmployees} = filter
+    if(filter=== { name: undefined, minEmployees: undefined, maxEmployees: undefined }){
+      filter={}
+    }
+    console.log(filter)
     if (Object.keys(filter).length === 0) {
       const companiesRes = await db.query(
         `SELECT handle,
@@ -76,7 +81,7 @@ class Company {
           minEmployees: ">=",
         }
       );
-      console.log(setCols, values);
+
       const companiesRes = await db.query(
         `SELECT handle,
                   name,
