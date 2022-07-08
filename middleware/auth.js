@@ -33,7 +33,7 @@ function authenticateJWT(req, res, next) {
  */
 
 function ensureLoggedIn(req, res, next) {
-  console.log(res.locals.user, 'res local user!!!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log(res.locals.user, "res local user!!!!!!!!!!!!!!!!!!!!!!!!!");
   try {
     if (!res.locals.user) throw new UnauthorizedError();
     return next();
@@ -46,8 +46,8 @@ function ensureLoggedIn(req, res, next) {
  * if not raises error
  */
 function ensureAdmin(req, res, next) {
-  console.log(req)
-  console.log(res.locals.user.isAdmin)
+  console.log(req);
+  console.log(res.locals.user.isAdmin);
   try {
     const user = res.locals.user.isAdmin;
     if (!user || user.isAdmin) {
@@ -62,16 +62,27 @@ function ensureAdmin(req, res, next) {
 /**Middleware to check if current user is either authorized Admin
  * or if current user
  */
-function ensureAdminOrCurrentUser(req, res, next){
+function ensureAdminOrCurrentUser(req, res, next) {
   if (!res.locals.user) throw new UnauthorizedError();
-
-  //conditional checking if local
-
-
+  console.log(res.locals.user);
+  console.log(req, " request body**********");
+  try {
+    if (req.firstName === res.locals.user.firstName) {
+      return next();
+    } else if (res.locals.user.isAdmin === true) {
+      return next();
+    } else {
+      throw new UnauthorizedError();
+    }
+  } catch (err) {
+    console.log(err, "error");
+    return next(err);
+  }
 }
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureAdmin
+  ensureAdmin,
+  ensureAdminOrCurrentUser,
 };
