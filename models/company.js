@@ -45,18 +45,22 @@ class Company {
   }
 
   /** Find all companies or find all companies with filtered conditions.
+   * checks that filter values are valid
    * TODO: update the takes bellow to match filter
    * takes filter object like: { setCols: ..., values:... }
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
   //TODO:   setcols, rename and column name
   static async findAll(filter) {
-
-    const {name, minEmployees, maxEmployees} = filter
-    if(filter=== { name: undefined, minEmployees: undefined, maxEmployees: undefined }){
-      filter={}
+    const isValidInput = (currentValue) =>
+      currentValue === "name" ||
+      currentValue === "minEmployees" ||
+      currentValue === "maxEmployees";
+    const isValid = Object.keys(filter).every(isValidInput);
+    if (isValid === false) {
+      throw new BadRequestError("Not valid filter input");
     }
-    console.log(filter)
+
     if (Object.keys(filter).length === 0) {
       const companiesRes = await db.query(
         `SELECT handle,

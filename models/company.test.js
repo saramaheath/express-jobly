@@ -33,7 +33,8 @@ describe("create", function () {
     const result = await db.query(
       `SELECT handle, name, description, num_employees, logo_url
            FROM companies
-           WHERE handle = 'new'`);
+           WHERE handle = 'new'`
+    );
     expect(result.rows).toEqual([
       {
         handle: "new",
@@ -86,9 +87,10 @@ describe("findAll", function () {
     ]);
   });
   test("works: with filter", async function () {
-    let companies = await Company.findAll({
-      name: "C1"
-    },
+    let companies = await Company.findAll(
+      {
+        name: "C1",
+      },
       {
         maxEmployees: "num_employees",
         minEmployees: "num_employees",
@@ -98,7 +100,6 @@ describe("findAll", function () {
         maxEmployees: "<=",
         minEmployees: ">=",
       }
-
     );
 
     expect(companies).toEqual([
@@ -108,15 +109,15 @@ describe("findAll", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
-      }
+      },
     ]);
-
   });
   test("throws error: with bad filter", async function () {
-
-      let companies = await Company.findAll({
-        handle: "C1"
-      },
+    try {
+      const companies = await Company.findAll(
+        {
+          handle: "C1",
+        },
         {
           maxEmployees: "num_employees",
           minEmployees: "num_employees",
@@ -127,18 +128,12 @@ describe("findAll", function () {
           minEmployees: ">=",
         }
       );
-
-    expect(companies).toEqual( {})
-
-
+      throw new Error("Should not run this line of code");
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
   });
 });
-
-
-
-
-
-
 
 /************************************** get */
 
