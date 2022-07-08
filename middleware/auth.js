@@ -33,6 +33,7 @@ function authenticateJWT(req, res, next) {
  */
 
 function ensureLoggedIn(req, res, next) {
+  console.log(res.locals.user, 'res local user!!!!!!!!!!!!!!!!!!!!!!!!!');
   try {
     if (!res.locals.user) throw new UnauthorizedError();
     return next();
@@ -45,7 +46,6 @@ function ensureLoggedIn(req, res, next) {
  * if not raises error
  */
 function ensureAdmin(req, res, next) {
-  //debugger;
   console.log(res.locals.user, 'user in ensureAdmin');
   try {
     const user = res.locals.user;
