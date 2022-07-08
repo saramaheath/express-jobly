@@ -46,10 +46,11 @@ function ensureLoggedIn(req, res, next) {
  * if not raises error
  */
 function ensureAdmin(req, res, next) {
-  console.log(res.locals.user, 'user in ensureAdmin');
+  console.log(req)
+  console.log(res.locals.user.isAdmin)
   try {
-    const user = res.locals.user;
-    if (!user || user.isAdmin === false) {
+    const user = res.locals.user.isAdmin;
+    if (!user || user.isAdmin) {
       throw new UnauthorizedError();
     }
     return next();
@@ -62,9 +63,10 @@ function ensureAdmin(req, res, next) {
  * or if current user
  */
 function ensureAdminOrCurrentUser(req, res, next){
-  const user = res.locals.user;
+  if (!res.locals.user) throw new UnauthorizedError();
+
   //conditional checking if local
-  
+
 
 }
 
